@@ -448,12 +448,13 @@ buildLegend();
 renderGrid();
 updateStats();
 
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    const splash = document.getElementById('splash');
-    if (splash) splash.classList.add('hidden');
-  }, 1200);
-});
+// Dismiss splash after max 2 seconds, regardless of load state
+function dismissSplash() {
+  const splash = document.getElementById('splash');
+  if (splash) splash.classList.add('hidden');
+}
+setTimeout(dismissSplash, 2000);
+window.addEventListener('load', () => setTimeout(dismissSplash, 400));
 
 if ('serviceWorker' in navigator) {
   const swCode = `
