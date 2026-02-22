@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>My Books 📚</title>
+
+<!-- iOS PWA / Add to Home Screen -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="My Books">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FF6B6B">
+
+<!-- App icon (generated inline as SVG data URI) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='url(%23g)'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FF6B6B'/%3E%3Cstop offset='0.5' stop-color='%23FF85A1'/%3E%3Cstop offset='1' stop-color='%23C77DFF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ctext x='90' y='115' text-anchor='middle' font-size='90' font-family='sans-serif'%3E📚%3C/text%3E%3C/svg%3E">
+
+<!-- Splash screen background colour matches header -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<!-- Load Google Fonts — falls back gracefully when offline -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
+
+<!-- Offline font fallback (system rounded fonts look great on iOS) -->
+<style>
+  @supports not (font-family: 'Nunito') {
+    body { font-family: -apple-system, 'Helvetica Neue Rounded', sans-serif; }
+  }
+</style>
+<style>
+  :root {
+    --coral: #FF6B6B;
+    --yellow: #FFD93D;
+    --teal: #6BCB77;
+    --blue: #4D96FF;
+    --purple: #C77DFF;
+    --pink: #FF85A1;
+    --orange: #FF9A3C;
+    --bg: #FFF9F0;
+    --text: #2D2D2D;
+    --light-text: #888;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Splash screen */
+  #splash {
+    position: fixed; inset: 0; z-index: 9999;
+    background: linear-gradient(135deg, var(--coral) 0%, var(--pink) 50%, var(--purple) 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 1rem;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+  }
+  #splash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+  #splash .splash-emoji { font-size: 5rem; animation: bounce 0.9s ease infinite alternate; }
+  #splash h1 {
+    font-family: 'Pacifico', cursive;
+    color: white; font-size: 2rem;
+    text-shadow: 3px 3px 0 rgba(0,0,0,0.15);
+    text-align: center; line-height: 1.3; padding: 0 2rem;
+  }
+  #splash p { color: rgba(255,255,255,0.85); font-weight: 700; font-size: 1rem; }
+  @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-14px); } }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: radial-gradient(circle, #FFD93D 1px, transparent 1px), radial-gradient(circle, #FF6B6B 1px, transparent 1px), radial-gradient(circle, #6BCB77 1px, transparent 1px);
+    background-size: 80px 80px, 120px 120px, 60px 60px;
+    background-position: 10px 10px, 40px 40px, 25px 70px;
+    opacity: 0.08; pointer-events: none; z-index: 0;
+  }
+  header {
+    position: relative; z-index: 1;
+    background: linear-gradient(135deg, var(--coral) 0%, var(--pink) 50%, var(--purple) 100%);
+    padding: calc(2rem + env(safe-area-inset-top)) 1.5rem 3rem;
+    text-align: center;
+    clip-path: ellipse(100% 85% at 50% 15%); margin-bottom: -1.5rem;
+  }
+  header h1 {
+    font-family: 'Pacifico', cursive;
+    font-size: clamp(1.6rem, 5vw, 2.8rem); color: white;
+    text-shadow: 3px 3px 0 rgba(0,0,0,0.15); line-height: 1.2; margin-bottom: 0.5rem;
+  }
+  header .subtitle { color: rgba(255,255,255,0.9); font-size: 1rem; font-weight: 700; }
+  .stars-row { display: flex; justify-content: center; gap: 4px; margin-top: 0.5rem; font-size: 1.3rem; }
+  .stats-bar { position: relative; z-index: 1; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; padding: 2rem 1rem 1rem; }
+  .stat-pill { background: white; border-radius: 50px; padding: 0.6rem 1.2rem; font-weight: 800; font-size: 0.9rem; box-shadow: 0 4px 15px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 0.4rem; border: 3px solid transparent; }
+  .stat-pill.owned { border-color: var(--teal); }
+  .stat-pill.total { border-color: var(--blue); }
+  .stat-pill.wishlist { border-color: var(--yellow); }
+  .stat-pill .count { font-size: 1.3rem; }
+  .stat-pill.owned .count { color: var(--teal); }
+  .stat-pill.total .count { color: var(--blue); }
+  .stat-pill.wishlist .count { color: var(--orange); }
+  .progress-wrap { position: relative; z-index: 1; padding: 0 1.5rem 1.5rem; max-width: 600px; margin: 0 auto; }
+  .progress-label { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.85rem; color: var(--light-text); margin-bottom: 0.5rem; }
+  .progress-track { background: #E8E0D8; border-radius: 50px; height: 18px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 50px; background: linear-gradient(90deg, var(--coral), var(--yellow)); transition: width 0.5s ease; position: relative; }
+  .progress-fill::after { content: '⭐'; position: absolute; right: -4px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; filter: drop-shadow(0 0 4px gold); }
+  .controls { position: relative; z-index: 1; display: flex; gap: 0.75rem; padding: 0 1rem 1.5rem; flex-wrap: wrap; max-width: 900px; margin: 0 auto; align-items: center; }
+  .search-wrap { flex: 1; min-width: 200px; position: relative; }
+  .search-wrap input { width: 100%; padding: 0.7rem 1rem 0.7rem 2.5rem; border: 3px solid #E8E0D8; border-radius: 50px; font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 600; outline: none; transition: border-color 0.2s; background: white; }
+  .search-wrap input:focus { border-color: var(--coral); }
+  .search-icon { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); font-size: 1rem; pointer-events: none; }
+  .filter-btn { padding: 0.6rem 1.1rem; border: 3px solid #E8E0D8; border-radius: 50px; background: white; font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .filter-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+  .filter-btn.active { background: var(--coral); border-color: var(--coral); color: white; }
+  .filter-btn.wishlist-filter.active { background: var(--yellow); border-color: var(--yellow); color: #333; }
+  .filter-btn.new-filter.active { background: var(--blue); border-color: var(--blue); color: white; }
+  .grid { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; padding: 0 1rem 2rem; max-width: 1000px; margin: 0 auto; }
+  .book-card { background: white; border-radius: 18px; padding: 1rem 0.8rem; text-align: center; cursor: default; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border: 3px solid transparent; position: relative; user-select: none; }
+  .book-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.12); }
+  .book-card.owned { border-color: var(--teal); background: linear-gradient(135deg, #F0FFF4, white); }
+  .book-card.wishlist-item { border-color: var(--yellow); background: linear-gradient(135deg, #FFFEF0, white); }
+  .book-card.new-book:not(.owned):not(.wishlist-item) { border-color: #c5e3ff; border-style: dashed; background: linear-gradient(135deg, #f0f8ff, white); }
+  .book-emoji { font-size: 1.8rem; margin: 0 auto 0.4rem; display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; border-radius: 50%; }
+  .book-name { font-weight: 800; font-size: 0.85rem; line-height: 1.3; margin-bottom: 0.2rem; color: var(--text); }
+  .book-category { font-size: 0.7rem; color: var(--light-text); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem; }
+  .book-year { font-size: 0.65rem; color: #bbb; font-weight: 600; margin-bottom: 0.4rem; }
+  .book-badge { position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+  .badge-owned { background: var(--teal); }
+  .badge-wish { background: var(--yellow); }
+  .badge-new { background: var(--blue); color: white; font-size: 0.5rem; font-weight: 900; font-family: 'Nunito', sans-serif; }
+  .mini-btns { display: flex; gap: 0.4rem; justify-content: center; }
+  .mini-btn { font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 20px; border: 2px solid; background: transparent; font-family: 'Nunito', sans-serif; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+  .mini-btn.own-btn { border-color: var(--teal); color: var(--teal); }
+  .mini-btn.own-btn:hover, .mini-btn.own-btn.active { background: var(--teal); color: white; }
+  .mini-btn.wish-btn { border-color: var(--orange); color: var(--orange); }
+  .mini-btn.wish-btn:hover, .mini-btn.wish-btn.active { background: var(--orange); color: white; }
+  .no-results { text-align: center; padding: 3rem; color: var(--light-text); font-weight: 700; font-size: 1.1rem; grid-column: 1 / -1; }
+  .no-results .emoji { font-size: 3rem; display: block; margin-bottom: 0.5rem; }
+  .legend { position: relative; z-index: 1; display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; padding: 0 1rem 1.5rem; }
+  .legend-item { display: flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; font-weight: 700; color: var(--light-text); background: white; padding: 0.3rem 0.7rem; border-radius: 20px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+  .legend-item:hover { border-color: #ddd; }
+  .legend-item.active { border-color: var(--coral); color: var(--text); }
+  footer { position: relative; z-index: 1; text-align: center; padding: 1.5rem; color: var(--light-text); font-size: 0.8rem; font-weight: 600; }
+  @media (max-width: 480px) { .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; } }
+</style>
+</head>
+<body>
+
+<!-- Splash screen (shown briefly on launch) -->
+<div id="splash">
+  <div class="splash-emoji">📚</div>
+  <h1>My Little People,<br>BIG DREAMS</h1>
+  <p>Loading your collection...</p>
+</div>
+
+<header>
+  <h1>My Little People,<br>BIG DREAMS 📚</h1>
+  <p class="subtitle">My Amazing Book Collection</p>
+  <div class="stars-row">⭐ ⭐ ⭐ ⭐ ⭐</div>
+</header>
+
+<div class="stats-bar">
+  <div class="stat-pill owned"><span class="count" id="owned-count">0</span><span>I have</span></div>
+  <div class="stat-pill total"><span class="count" id="total-count">0</span><span>Total books</span></div>
+  <div class="stat-pill wishlist"><span class="count" id="wish-count">0</span><span>Wish list</span></div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-label"><span>Collection progress</span><span id="pct-label">0%</span></div>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="search" placeholder="Search for a person...">
+  </div>
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="owned">I have ✅</button>
+  <button class="filter-btn wishlist-filter" data-filter="wishlist">Wish list ⭐</button>
+  <button class="filter-btn new-filter" data-filter="new">Coming Soon 🆕</button>
+</div>
+
+<div class="legend" id="cat-legend"></div>
+<div class="grid" id="grid"></div>
+<footer>Made with ❤️ for little big dreamers · <span id="footer-count"></span> books in the series</footer>
+
+<script>
+const STORAGE_KEY = 'lpbd_collection_v3';
+
+const books = [
+  { name: "Zaha Hadid", cat: "Art", emoji: "🏛️", year: 2015 },
+  { name: "Audrey Hepburn", cat: "Film", emoji: "🎬", year: 2015 },
+  { name: "Frida Kahlo", cat: "Art", emoji: "🎨", year: 2015 },
+  { name: "Amelia Earhart", cat: "Adventure", emoji: "✈️", year: 2016 },
+  { name: "Coco Chanel", cat: "Fashion", emoji: "👗", year: 2016 },
+  { name: "Agatha Christie", cat: "Writing", emoji: "🔍", year: 2016 },
+  { name: "Maya Angelou", cat: "Writing", emoji: "✍️", year: 2016 },
+  { name: "Jane Goodall", cat: "Science", emoji: "🦍", year: 2016 },
+  { name: "Marie Curie", cat: "Science", emoji: "⚗️", year: 2016 },
+  { name: "Emmeline Pankhurst", cat: "Activism", emoji: "✊", year: 2017 },
+  { name: "Rosa Parks", cat: "Activism", emoji: "✊", year: 2017 },
+  { name: "Ada Lovelace", cat: "Science", emoji: "💻", year: 2017 },
+  { name: "Jane Austen", cat: "Writing", emoji: "✍️", year: 2018 },
+  { name: "Georgia O'Keeffe", cat: "Art", emoji: "🌸", year: 2018 },
+  { name: "Anne Frank", cat: "History", emoji: "📖", year: 2018 },
+  { name: "Harriet Tubman", cat: "Activism", emoji: "🕊️", year: 2018 },
+  { name: "Josephine Baker", cat: "Music", emoji: "🎤", year: 2018 },
+  { name: "Mother Teresa", cat: "Activism", emoji: "❤️", year: 2018 },
+  { name: "Simone de Beauvoir", cat: "Writing", emoji: "✍️", year: 2018 },
+  { name: "L.M. Montgomery", cat: "Writing", emoji: "✍️", year: 2018 },
+  { name: "Stephen Hawking", cat: "Science", emoji: "🔭", year: 2018 },
+  { name: "Muhammad Ali", cat: "Sport", emoji: "🥊", year: 2018 },
+  { name: "Ella Fitzgerald", cat: "Music", emoji: "🎤", year: 2019 },
+  { name: "Wilma Rudolph", cat: "Sport", emoji: "🏃", year: 2019 },
+  { name: "David Bowie", cat: "Music", emoji: "🎵", year: 2019 },
+  { name: "Mahatma Gandhi", cat: "Activism", emoji: "🕊️", year: 2019 },
+  { name: "Maria Montessori", cat: "Leadership", emoji: "🌟", year: 2019 },
+  { name: "Vivienne Westwood", cat: "Fashion", emoji: "👗", year: 2019 },
+  { name: "Dolly Parton", cat: "Music", emoji: "🎸", year: 2019 },
+  { name: "Bruce Lee", cat: "Sport", emoji: "🥋", year: 2019 },
+  { name: "Rudolf Nureyev", cat: "Art", emoji: "🩰", year: 2019 },
+  { name: "Mary Shelley", cat: "Writing", emoji: "✍️", year: 2019 },
+  { name: "John Lennon", cat: "Music", emoji: "🎵", year: 2020 },
+  { name: "Captain Tom Moore", cat: "History", emoji: "🎖️", year: 2020 },
+  { name: "Martin Luther King Jr.", cat: "Activism", emoji: "✊", year: 2020 },
+  { name: "David Attenborough", cat: "Science", emoji: "🌿", year: 2020 },
+  { name: "Astrid Lindgren", cat: "Writing", emoji: "✍️", year: 2020 },
+  { name: "Evonne Goolagong", cat: "Sport", emoji: "🎾", year: 2020 },
+  { name: "Alan Turing", cat: "Science", emoji: "💻", year: 2020 },
+  { name: "Bob Dylan", cat: "Music", emoji: "🎵", year: 2020 },
+  { name: "Greta Thunberg", cat: "Activism", emoji: "🌍", year: 2020 },
+  { name: "Billie Jean King", cat: "Sport", emoji: "🎾", year: 2020 },
+  { name: "Jean-Michel Basquiat", cat: "Art", emoji: "🎨", year: 2020 },
+  { name: "Jesse Owens", cat: "Sport", emoji: "🏃", year: 2020 },
+  { name: "Aretha Franklin", cat: "Music", emoji: "🎵", year: 2020 },
+  { name: "Corazon Aquino", cat: "Leadership", emoji: "🌟", year: 2020 },
+  { name: "Ernest Shackleton", cat: "Adventure", emoji: "🧭", year: 2020 },
+  { name: "Pelé", cat: "Sport", emoji: "⚽", year: 2020 },
+  { name: "Louise Bourgeois", cat: "Art", emoji: "🕷️", year: 2020 },
+  { name: "Steve Jobs", cat: "Science", emoji: "💻", year: 2020 },
+  { name: "Elton John", cat: "Music", emoji: "🎹", year: 2020 },
+  { name: "Megan Rapinoe", cat: "Sport", emoji: "⚽", year: 2021 },
+  { name: "Hans Christian Andersen", cat: "Writing", emoji: "✍️", year: 2021 },
+  { name: "Iris Apfel", cat: "Fashion", emoji: "👓", year: 2021 },
+  { name: "Rosalind Franklin", cat: "Science", emoji: "🔬", year: 2021 },
+  { name: "Ruth Bader Ginsburg", cat: "Leadership", emoji: "⚖️", year: 2021 },
+  { name: "Michelle Obama", cat: "Leadership", emoji: "🌟", year: 2021 },
+  { name: "RuPaul", cat: "Art", emoji: "💅", year: 2021 },
+  { name: "Andy Warhol", cat: "Art", emoji: "🎨", year: 2021 },
+  { name: "Marilyn Monroe", cat: "Film", emoji: "🎬", year: 2021 },
+  { name: "Albert Einstein", cat: "Science", emoji: "🔬", year: 2021 },
+  { name: "Charles Dickens", cat: "Writing", emoji: "✍️", year: 2021 },
+  { name: "Yoko Ono", cat: "Art", emoji: "🎨", year: 2021 },
+  { name: "Kamala Harris", cat: "Leadership", emoji: "🌟", year: 2021 },
+  { name: "Charles Darwin", cat: "Science", emoji: "🌿", year: 2021 },
+  { name: "Prince", cat: "Music", emoji: "🎵", year: 2021 },
+  { name: "Stevie Wonder", cat: "Music", emoji: "🎹", year: 2021 },
+  { name: "Mary Anning", cat: "Science", emoji: "🦕", year: 2021 },
+  { name: "Malala Yousafzai", cat: "Activism", emoji: "✊", year: 2021 },
+  { name: "Mindy Kaling", cat: "Film", emoji: "🎬", year: 2021 },
+  { name: "Michael Jordan", cat: "Sport", emoji: "🏀", year: 2021 },
+  { name: "Harry Houdini", cat: "Art", emoji: "🎩", year: 2022 },
+  { name: "Florence Nightingale", cat: "Science", emoji: "🏥", year: 2022 },
+  { name: "Amanda Gorman", cat: "Writing", emoji: "✍️", year: 2022 },
+  { name: "Gloria Steinem", cat: "Activism", emoji: "✊", year: 2022 },
+  { name: "Nelson Mandela", cat: "Activism", emoji: "✊", year: 2022 },
+  { name: "Pablo Picasso", cat: "Art", emoji: "🎨", year: 2022 },
+  { name: "Nikola Tesla", cat: "Science", emoji: "⚡", year: 2022 },
+  { name: "Neil Armstrong", cat: "Adventure", emoji: "🚀", year: 2022 },
+  { name: "Alexander von Humboldt", cat: "Science", emoji: "🌿", year: 2022 },
+  { name: "Wilma Mankiller", cat: "Leadership", emoji: "🌟", year: 2022 },
+  { name: "J.R.R. Tolkien", cat: "Writing", emoji: "✍️", year: 2022 },
+  { name: "Elvis Presley", cat: "Music", emoji: "🎸", year: 2022 },
+  { name: "Marcus Rashford", cat: "Sport", emoji: "⚽", year: 2022 },
+  { name: "Mae Jemison", cat: "Science", emoji: "🚀", year: 2022 },
+  { name: "Laverne Cox", cat: "Film", emoji: "🎬", year: 2022 },
+  { name: "Queen Elizabeth", cat: "History", emoji: "👑", year: 2022 },
+  { name: "Dwayne Johnson", cat: "Sport", emoji: "💪", year: 2022 },
+  { name: "Helen Keller", cat: "Activism", emoji: "✊", year: 2022 },
+  { name: "Terry Fox", cat: "Sport", emoji: "🏃", year: 2022 },
+  { name: "Anna Pavlova", cat: "Art", emoji: "🩰", year: 2022 },
+  { name: "Hedy Lamarr", cat: "Science", emoji: "💡", year: 2023 },
+  { name: "Freddie Mercury", cat: "Music", emoji: "🎵", year: 2023 },
+  { name: "Shakira", cat: "Music", emoji: "🎵", year: 2023 },
+  { name: "Louis Pasteur", cat: "Science", emoji: "🔬", year: 2023 },
+  { name: "Lewis Hamilton", cat: "Sport", emoji: "🏎️", year: 2023 },
+  { name: "David Hockney", cat: "Art", emoji: "🎨", year: 2023 },
+  { name: "King Charles", cat: "History", emoji: "👑", year: 2023 },
+  { name: "Vanessa Nakate", cat: "Activism", emoji: "🌍", year: 2023 },
+  { name: "Olive Morris", cat: "Activism", emoji: "✊", year: 2023 },
+  { name: "Princess Diana", cat: "History", emoji: "👑", year: 2023 },
+  { name: "Mozart", cat: "Music", emoji: "🎼", year: 2023 },
+  { name: "Leo Messi", cat: "Sport", emoji: "⚽", year: 2023 },
+  { name: "Mary Kom", cat: "Sport", emoji: "🥊", year: 2024 },
+  { name: "Sally Ride", cat: "Science", emoji: "🚀", year: 2024 },
+  { name: "Tenzing Norgay", cat: "Adventure", emoji: "🏔️", year: 2024 },
+  { name: "Kylie Minogue", cat: "Music", emoji: "🎵", year: 2024 },
+  { name: "Beyoncé", cat: "Music", emoji: "🎵", year: 2024 },
+  { name: "Usain Bolt", cat: "Sport", emoji: "⚡", year: 2024 },
+  { name: "Taylor Swift", cat: "Music", emoji: "🎵", year: 2024 },
+  { name: "Simone Biles", cat: "Sport", emoji: "🤸", year: 2024 },
+  { name: "Stan Lee", cat: "Writing", emoji: "🦸", year: 2024 },
+  { name: "Leonard Cohen", cat: "Music", emoji: "🎵", year: 2024 },
+  { name: "Vincent Van Gogh", cat: "Art", emoji: "🌻", year: 2024 },
+  { name: "Salvador Dalí", cat: "Art", emoji: "🎨", year: 2024 },
+  { name: "Antoine de Saint-Exupéry", cat: "Writing", emoji: "✍️", year: 2024 },
+  { name: "Katherine Johnson", cat: "Science", emoji: "🚀", year: 2025 },
+  { name: "Patrick Mahomes", cat: "Sport", emoji: "🏈", year: 2025 },
+  { name: "David Beckham", cat: "Sport", emoji: "⚽", year: 2025 },
+  { name: "Yayoi Kusama", cat: "Art", emoji: "🎨", year: 2025 },
+  { name: "Harry Styles", cat: "Music", emoji: "🎵", year: 2025 },
+  { name: "William Kamkwamba", cat: "Science", emoji: "⚡", year: 2025 },
+  { name: "Mary Earps", cat: "Sport", emoji: "⚽", year: 2025 },
+  { name: "Yves Saint Laurent", cat: "Fashion", emoji: "👗", year: 2025 },
+  { name: "Bob Marley", cat: "Music", emoji: "🎵", year: 2025 },
+  { name: "Virginia Woolf", cat: "Writing", emoji: "✍️", year: 2025 },
+  { name: "Ludwig van Beethoven", cat: "Music", emoji: "🎼", year: 2025 },
+  { name: "Louis Braille", cat: "History", emoji: "📖", year: 2025 },
+  { name: "Steven Spielberg", cat: "Film", emoji: "🎬", year: 2025 },
+  { name: "Oprah Winfrey", cat: "Leadership", emoji: "🌟", year: 2025 },
+  // 2026 coming soon
+  { name: "Amal Clooney", cat: "Activism", emoji: "⚖️", year: 2026, isNew: true },
+  { name: "Ed Sheeran", cat: "Music", emoji: "🎵", year: 2026, isNew: true },
+  { name: "Ernő Rubik", cat: "Science", emoji: "🧩", year: 2026, isNew: true },
+  { name: "Harry Kane", cat: "Sport", emoji: "⚽", year: 2026, isNew: true },
+  { name: "Alexander Hamilton", cat: "History", emoji: "🗽", year: 2026, isNew: true },
+  { name: "Cristiano Ronaldo", cat: "Sport", emoji: "⚽", year: 2026, isNew: true },
+  { name: "William Shakespeare", cat: "Writing", emoji: "✍️", year: 2026, isNew: true },
+  { name: "Leonardo da Vinci", cat: "Art", emoji: "🎨", year: 2026, isNew: true },
+  { name: "Rihanna", cat: "Music", emoji: "🎵", year: 2026, isNew: true },
+  { name: "Beatrix Potter", cat: "Writing", emoji: "🐰", year: 2026, isNew: true },
+  { name: "Stormzy", cat: "Music", emoji: "🎵", year: 2026, isNew: true },
+];
+
+const seen = new Set();
+const uniqueBooks = books.filter(b => { if (seen.has(b.name)) return false; seen.add(b.name); return true; });
+uniqueBooks.sort((a, b) => a.name.localeCompare(b.name));
+
+const catColors = { "Art":"#E8D5FF","Music":"#FFE0F0","Science":"#D5F0FF","Writing":"#FFE8D5","Activism":"#FFD5D5","Sport":"#D5FFE8","Leadership":"#FFF5D5","Adventure":"#D5FFE5","Film":"#FFD5FF","Fashion":"#FFE5D5","History":"#E5E5FF" };
+const catEmoji = { "Art":"🎨","Music":"🎵","Science":"🔬","Writing":"✍️","Activism":"✊","Sport":"🏅","Leadership":"🌟","Adventure":"🧭","Film":"🎬","Fashion":"👗","History":"📚" };
+
+let state = {};
+try {
+  const oldSaved = localStorage.getItem('lpbd_collection_v2');
+  if (oldSaved) state = JSON.parse(oldSaved);
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) state = JSON.parse(saved);
+} catch(e) {}
+
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+let currentFilter = 'all';
+let currentCatFilter = null;
+let searchQuery = '';
+
+function updateStats() {
+  const ownedCount = uniqueBooks.filter(b => state[b.name]?.owned).length;
+  const wishCount = uniqueBooks.filter(b => state[b.name]?.wish && !state[b.name]?.owned).length;
+  const total = uniqueBooks.filter(b => !b.isNew).length;
+  document.getElementById('owned-count').textContent = ownedCount;
+  document.getElementById('total-count').textContent = total;
+  document.getElementById('wish-count').textContent = wishCount;
+  document.getElementById('footer-count').textContent = uniqueBooks.length;
+  const pct = total > 0 ? Math.round((ownedCount / total) * 100) : 0;
+  document.getElementById('pct-label').textContent = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function buildLegend() {
+  const cats = [...new Set(uniqueBooks.map(b => b.cat))].sort();
+  const wrap = document.getElementById('cat-legend');
+  wrap.innerHTML = cats.map(c => `<div class="legend-item${currentCatFilter === c ? ' active' : ''}" data-cat="${c}">${catEmoji[c] || '📚'} ${c}</div>`).join('');
+  wrap.querySelectorAll('.legend-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const cat = el.dataset.cat;
+      currentCatFilter = currentCatFilter === cat ? null : cat;
+      buildLegend(); renderGrid();
+    });
+  });
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  let filtered = uniqueBooks.filter(b => {
+    const bs = state[b.name] || {};
+    if (currentFilter === 'owned' && !bs.owned) return false;
+    if (currentFilter === 'wishlist' && !bs.wish) return false;
+    if (currentFilter === 'new' && !b.isNew) return false;
+    if (currentCatFilter && b.cat !== currentCatFilter) return false;
+    if (searchQuery && !b.name.toLowerCase().includes(searchQuery)) return false;
+    return true;
+  });
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="no-results"><span class="emoji">🔍</span>No books found!<br><small>Try a different search</small></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(b => {
+    const bs = state[b.name] || {};
+    const bg = catColors[b.cat] || '#f5f5f5';
+    const badge = bs.owned ? '<div class="book-badge badge-owned">✓</div>' : bs.wish ? '<div class="book-badge badge-wish">⭐</div>' : b.isNew ? '<div class="book-badge badge-new">NEW</div>' : '';
+    return `<div class="book-card${bs.owned ? ' owned' : ''}${bs.wish && !bs.owned ? ' wishlist-item' : ''}${b.isNew ? ' new-book' : ''}" data-name="${b.name}">
+      ${badge}
+      <div class="book-emoji" style="background:${bg}">${b.emoji}</div>
+      <div class="book-name">${b.name}</div>
+      <div class="book-category">${catEmoji[b.cat] || ''} ${b.cat}</div>
+      <div class="book-year">${b.year}${b.isNew ? ' · Coming Soon' : ''}</div>
+      <div class="mini-btns">
+        <button class="mini-btn own-btn${bs.owned ? ' active' : ''}" data-name="${b.name}" data-action="own">I have it</button>
+        <button class="mini-btn wish-btn${bs.wish && !bs.owned ? ' active' : ''}" data-name="${b.name}" data-action="wish">Want it</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  grid.querySelectorAll('.mini-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const name = btn.dataset.name;
+      const action = btn.dataset.action;
+      if (!state[name]) state[name] = {};
+      if (action === 'own') {
+        state[name].owned = !state[name].owned;
+        if (state[name].owned) state[name].wish = false;
+      } else {
+        if (!state[name].owned) state[name].wish = !state[name].wish;
+      }
+      save(); updateStats(); renderGrid();
+    });
+  });
+  updateStats();
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderGrid();
+  });
+});
+
+document.getElementById('search').addEventListener('input', e => {
+  searchQuery = e.target.value.toLowerCase().trim();
+  renderGrid();
+});
+
+buildLegend();
+renderGrid();
+updateStats();
+
+// Dismiss splash screen after a short delay
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const splash = document.getElementById('splash');
+    if (splash) splash.classList.add('hidden');
+  }, 1200);
+});
+
+// Register Service Worker for offline support
+if ('serviceWorker' in navigator) {
+  const swCode = `
+const CACHE = 'lpbd-v1';
+const FONTS = [
+  'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap',
+  'https://fonts.gstatic.com'
+];
+
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE).then(cache => cache.addAll([]))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(clients.claim());
+});
+
+self.addEventListener('fetch', e => {
+  // Cache-first for font requests, network-first for everything else
+  if (e.request.url.includes('fonts.g')) {
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        if (cached) return cached;
+        return fetch(e.request).then(res => {
+          const clone = res.clone();
+          caches.open(CACHE).then(cache => cache.put(e.request, clone));
+          return res;
+        }).catch(() => cached);
+      })
+    );
+  }
+});
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+</script>
+</body>
+</html>
