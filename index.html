@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
 <title>My Books 📚</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -159,6 +159,66 @@
 
   footer { position: relative; z-index: 1; text-align: center; padding: 1.5rem; color: var(--light-text); font-size: 0.8rem; font-weight: 600; }
 
+  /* ===== WAND OVERLAY ===== */
+  .wand-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
+  .wand { position: absolute; font-size: 40px; animation: wandWave 1.2s ease-out forwards; filter: drop-shadow(0 0 8px rgba(255,107,107,0.6)); }
+  @keyframes wandWave {
+    0% { transform: rotate(-30deg) scale(0); opacity: 0; }
+    20% { transform: rotate(-15deg) scale(1.2); opacity: 1; }
+    40% { transform: rotate(15deg) scale(1); opacity: 1; }
+    60% { transform: rotate(-5deg) scale(1.1); opacity: 1; }
+    80% { transform: rotate(5deg) scale(1); opacity: 0.8; }
+    100% { transform: rotate(0deg) scale(0.5); opacity: 0; }
+  }
+  .rainbow-particle { position: absolute; width: 10px; height: 10px; border-radius: 50%; animation: rainbowArc 1s ease-out forwards; pointer-events: none; filter: blur(0.5px); }
+  @keyframes rainbowArc {
+    0% { transform: translate(0,0) scale(0); opacity: 0; }
+    15% { transform: translate(calc(var(--tx)*0.15),calc(var(--ty)*0.15 - 20px)) scale(1.5); opacity: 1; }
+    50% { transform: translate(calc(var(--tx)*0.6),calc(var(--ty)*0.6 - 35px)) scale(1.2); opacity: 1; }
+    80% { transform: translate(calc(var(--tx)*0.9),calc(var(--ty)*0.9 - 15px)) scale(0.8); opacity: 0.8; }
+    100% { transform: translate(var(--tx),var(--ty)) scale(0.3); opacity: 0; }
+  }
+  .rainbow-trail { position: absolute; width: 6px; height: 6px; border-radius: 50%; animation: trailFade 0.6s ease-out forwards; pointer-events: none; opacity: 0.6; }
+  @keyframes trailFade { 0% { transform: scale(0.8); opacity: 0.6; } 100% { transform: scale(0); opacity: 0; } }
+  .card-glow { animation: rainbowGlow 1s ease-out; }
+  @keyframes rainbowGlow {
+    0% { box-shadow: 0 0 0 0 rgba(255,0,0,0.4); }
+    16% { box-shadow: 0 0 15px 5px rgba(255,165,0,0.3); }
+    33% { box-shadow: 0 0 20px 8px rgba(255,255,0,0.3); }
+    50% { box-shadow: 0 0 20px 10px rgba(0,200,0,0.3); }
+    66% { box-shadow: 0 0 15px 8px rgba(0,100,255,0.3); }
+    83% { box-shadow: 0 0 10px 5px rgba(130,0,255,0.3); }
+    100% { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  }
+
+  /* ===== CELEBRATION ===== */
+  .celebration-overlay { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+  .celebration-overlay.show { opacity: 1; pointer-events: auto; }
+  .celebration-content { text-align: center; color: #fff; transform: scale(0.5); opacity: 0; transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease; }
+  .celebration-overlay.show .celebration-content { transform: scale(1); opacity: 1; }
+  .celebration-emoji { font-size: 80px; margin-bottom: 12px; }
+  .celebration-title { font-family: 'Pacifico', cursive; font-size: 28px; text-shadow: 0 2px 12px rgba(0,0,0,0.3); margin-bottom: 8px; }
+  .celebration-sub { font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 600; opacity: 0.9; margin-bottom: 24px; }
+  .celebration-dismiss { background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.5); color: #fff; border-radius: 24px; padding: 10px 28px; font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; }
+
+  /* ===== MILESTONE TOAST ===== */
+  .milestone-toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(0.5); z-index: 10001; background: linear-gradient(135deg, var(--coral), var(--purple)); color: #fff; border-radius: 20px; padding: 24px 36px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease; }
+  .milestone-toast.show { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+  .milestone-emoji { font-size: 48px; margin-bottom: 8px; }
+  .milestone-text { font-family: 'Pacifico', cursive; font-size: 22px; }
+  .milestone-sub { font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 600; opacity: 0.85; margin-top: 4px; }
+
+  /* ===== SETTINGS ===== */
+  .settings-toggle { display: block; margin: 0 auto 8px; background: none; border: 2px dashed #E8E0D8; color: var(--light-text); border-radius: 12px; padding: 10px 20px; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .settings-panel { display: none; max-width: 340px; margin: 0 auto 16px; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .settings-panel.open { display: block; }
+  .settings-btn-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .settings-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; min-height: 44px; }
+  .settings-btn.export { background: var(--coral); color: #fff; }
+  .settings-btn.import { background: #FFE8D5; color: var(--coral); }
+  .settings-status { font-size: 13px; text-align: center; color: var(--teal); font-weight: 700; min-height: 20px; }
+  .import-file-input { display: none; }
+
   /* Tablet: 6 columns */
   @media (max-width: 900px) {
     .grid, .overflow-grid { grid-template-columns: repeat(6, 1fr); gap: 0.5rem; }
@@ -178,6 +238,23 @@
 </style>
 </head>
 <body>
+
+<div class="wand-overlay" id="wandOverlay"></div>
+
+<div class="celebration-overlay" id="celebrationOverlay">
+  <div class="celebration-content">
+    <div class="celebration-emoji" id="celebrationEmoji"></div>
+    <div class="celebration-title" id="celebrationTitle"></div>
+    <div class="celebration-sub" id="celebrationSub"></div>
+    <button class="celebration-dismiss" onclick="dismissCelebration()">Yay! 🎉</button>
+  </div>
+</div>
+
+<div class="milestone-toast" id="milestoneToast">
+  <div class="milestone-emoji" id="milestoneEmoji"></div>
+  <div class="milestone-text" id="milestoneText"></div>
+  <div class="milestone-sub" id="milestoneSub"></div>
+</div>
 
 <header>
   <h1>My Little People,<br>BIG DREAMS 📚</h1>
@@ -227,6 +304,16 @@
 </div>
 
 <footer>Made with ❤️ for little big dreamers · <span id="footer-count"></span> books in the series</footer>
+
+<button class="settings-toggle" onclick="toggleSettings()">⚙️ Settings</button>
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-btn-row">
+    <button class="settings-btn export" onclick="exportData()">📥 Backup</button>
+    <button class="settings-btn import" onclick="document.getElementById('importFile').click()">📤 Restore</button>
+  </div>
+  <input type="file" id="importFile" class="import-file-input" accept=".json" onchange="importData(event)">
+  <div class="settings-status" id="settingsStatus"></div>
+</div>
 
 <script>
 const STORAGE_KEY = 'lpbd_collection_v3';
@@ -553,7 +640,17 @@ function renderGrid() {
         if (!state[name]) state[name] = {};
         if (action === 'own') {
           state[name].owned = !state[name].owned;
-          if (state[name].owned) state[name].wish = false;
+          if (state[name].owned) {
+            state[name].wish = false;
+            const card = btn.closest('.book-card');
+            if (card) playWandAnimation(card);
+            playSparkleChime();
+            hapticBuzz();
+            save(); updateStats(); renderGrid();
+            checkCategoryCompletion(name);
+            setTimeout(() => checkMilestones(), 600);
+            return;
+          }
         } else {
           if (!state[name].owned) state[name].wish = !state[name].wish;
         }
@@ -604,6 +701,183 @@ document.getElementById('sort-toggle').addEventListener('click', () => {
 buildLegend();
 renderGrid();
 updateStats();
+
+// ===== AUDIO & HAPTIC =====
+let audioCtx = null;
+function playSparkleChime() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = audioCtx.currentTime;
+    [880, 1318.5, 1760].forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.15, now + i * 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.3);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now + i * 0.06);
+      osc.stop(now + i * 0.06 + 0.35);
+    });
+  } catch(e) {}
+}
+function hapticBuzz() { if (navigator.vibrate) navigator.vibrate(30); }
+
+// ===== WAND ANIMATION =====
+function playWandAnimation(cardEl) {
+  const overlay = document.getElementById('wandOverlay');
+  const rect = cardEl.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const wand = document.createElement('div');
+  wand.className = 'wand';
+  wand.textContent = '🪄';
+  wand.style.left = (cx - 20) + 'px';
+  wand.style.top = (cy - 20) + 'px';
+  overlay.appendChild(wand);
+  playRainbowAnimation(overlay, cx, cy);
+  cardEl.classList.add('card-glow');
+  setTimeout(() => { overlay.innerHTML = ''; cardEl.classList.remove('card-glow'); }, 1200);
+}
+function playRainbowAnimation(overlay, cx, cy) {
+  const rainbow = ['#FF0000','#FF8C00','#FFD700','#00CC44','#0088FF','#4400CC','#8B00FF'];
+  const count = 21;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'rainbow-particle';
+    const angle = Math.PI + (i / (count - 1)) * Math.PI;
+    const dist = 50 + (i % 3) * 20;
+    const tx = Math.cos(angle) * dist;
+    const ty = Math.sin(angle) * dist - 20;
+    p.style.setProperty('--tx', tx + 'px');
+    p.style.setProperty('--ty', ty + 'px');
+    p.style.left = (cx - 5) + 'px';
+    p.style.top = (cy - 5) + 'px';
+    p.style.background = rainbow[i % rainbow.length];
+    p.style.boxShadow = `0 0 6px ${rainbow[i % rainbow.length]}`;
+    p.style.animationDelay = (i * 0.03) + 's';
+    overlay.appendChild(p);
+    setTimeout(() => {
+      const trail = document.createElement('div');
+      trail.className = 'rainbow-trail';
+      trail.style.left = (cx - 3 + tx * 0.4) + 'px';
+      trail.style.top = (cy - 3 + ty * 0.4) + 'px';
+      trail.style.background = rainbow[i % rainbow.length];
+      overlay.appendChild(trail);
+    }, 200 + i * 30);
+  }
+}
+
+// ===== CATEGORY CELEBRATIONS =====
+const CELEBRATIONS_KEY = 'lpbd_celebrations_v1';
+function loadCelebrations() {
+  try { return JSON.parse(localStorage.getItem(CELEBRATIONS_KEY) || '[]'); } catch { return []; }
+}
+function checkCategoryCompletion(bookName) {
+  const book = uniqueBooks.find(b => b.name === bookName);
+  if (!book) return;
+  const cat = book.cat;
+  if (loadCelebrations().includes(cat)) return;
+  const catBooks = uniqueBooks.filter(b => b.cat === cat && !b.isNew);
+  if (catBooks.every(b => state[b.name]?.owned)) {
+    const c = loadCelebrations();
+    c.push(cat);
+    localStorage.setItem(CELEBRATIONS_KEY, JSON.stringify(c));
+    setTimeout(() => showCategoryCelebration(cat), 800);
+  }
+}
+function showCategoryCelebration(cat) {
+  const overlay = document.getElementById('celebrationOverlay');
+  document.getElementById('celebrationEmoji').textContent = catEmoji[cat] || '📚';
+  document.getElementById('celebrationTitle').textContent = `All ${cat} books!`;
+  document.getElementById('celebrationSub').textContent = "You've collected every one — amazing!";
+  overlay.classList.add('show');
+  const wandOv = document.getElementById('wandOverlay');
+  const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+  playRainbowAnimation(wandOv, cx, cy);
+  setTimeout(() => { wandOv.innerHTML = ''; playRainbowAnimation(wandOv, cx, cy); }, 400);
+  setTimeout(() => { wandOv.innerHTML = ''; playRainbowAnimation(wandOv, cx, cy); }, 800);
+  setTimeout(() => { wandOv.innerHTML = ''; }, 2000);
+  setTimeout(dismissCelebration, 5000);
+}
+function dismissCelebration() {
+  document.getElementById('celebrationOverlay').classList.remove('show');
+  document.getElementById('wandOverlay').innerHTML = '';
+}
+
+// ===== MILESTONES =====
+const MILESTONES_KEY = 'lpbd_milestones_v1';
+const MILESTONE_THRESHOLDS = [10, 25, 50, 75, 100, 125];
+const MILESTONE_MESSAGES = {
+  10:  { emoji: '⭐', text: '10 books!',  sub: "You're a star reader!" },
+  25:  { emoji: '🌟', text: '25 books!',  sub: 'A quarter of the way!' },
+  50:  { emoji: '📚', text: '50 books!',  sub: 'Halfway there!' },
+  75:  { emoji: '🏆', text: '75 books!',  sub: 'What a collection!' },
+  100: { emoji: '✨', text: '100 books!', sub: 'Triple digits — incredible!' },
+  125: { emoji: '🎉', text: '125 books!', sub: 'Almost there!' }
+};
+function loadMilestones() {
+  try { return JSON.parse(localStorage.getItem(MILESTONES_KEY) || '[]'); } catch { return []; }
+}
+function checkMilestones() {
+  const shown = loadMilestones();
+  const total = uniqueBooks.reduce((n, b) => n + (state[b.name]?.owned ? 1 : 0), 0);
+  for (const threshold of MILESTONE_THRESHOLDS) {
+    if (total >= threshold && !shown.includes(threshold)) {
+      shown.push(threshold);
+      localStorage.setItem(MILESTONES_KEY, JSON.stringify(shown));
+      showMilestoneToast(threshold);
+      return;
+    }
+  }
+}
+function showMilestoneToast(n) {
+  const m = MILESTONE_MESSAGES[n];
+  if (!m) return;
+  const toast = document.getElementById('milestoneToast');
+  document.getElementById('milestoneEmoji').textContent = m.emoji;
+  document.getElementById('milestoneText').textContent = m.text;
+  document.getElementById('milestoneSub').textContent = m.sub;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ===== EXPORT / IMPORT =====
+function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('open'); }
+function exportData() {
+  const payload = { version: 1, exported: new Date().toISOString(), collection: state, celebrations: loadCelebrations(), milestones: loadMilestones() };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'my-books-backup.json'; a.click();
+  URL.revokeObjectURL(url);
+  showSettingsStatus('Backup saved! ✅');
+}
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.collection || typeof data.collection !== 'object') throw new Error('Invalid');
+      state = data.collection;
+      save();
+      if (Array.isArray(data.celebrations)) localStorage.setItem(CELEBRATIONS_KEY, JSON.stringify(data.celebrations));
+      if (Array.isArray(data.milestones)) localStorage.setItem(MILESTONES_KEY, JSON.stringify(data.milestones));
+      updateStats(); renderGrid();
+      showSettingsStatus('Collection restored! ✅');
+    } catch { showSettingsStatus('Could not read file ❌'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+function showSettingsStatus(msg) {
+  const el = document.getElementById('settingsStatus');
+  el.textContent = msg;
+  setTimeout(() => { el.textContent = ''; }, 4000);
+}
 </script>
 </body>
 </html>
